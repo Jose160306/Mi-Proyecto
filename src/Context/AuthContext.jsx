@@ -1,48 +1,38 @@
 import { createContext, useContext, useState } from "react";
+import * as api from "../api";
 
 const AuthContext = createContext();
 
-// Usuario administrador por defecto
-const usuariosIniciales = [
-  {
-    noControl: "admin",
-    nombre: "Administrador",
-    contrasena: "123456789",
-    esAdmin: true
-  }
-];
-
 export function AuthProvider({ children }) {
-  const [usuarios, setUsuarios] = useState(usuariosIniciales);
   const [usuarioActual, setUsuarioActual] = useState(null);
 
-  // Registrar nuevo usuario
-  function registrar(noControl, nombre, contrasena) {
-    // Verificar que el numero de control no exista ya
-    const existe = usuarios.find(u => u.noControl === noControl);
-    if (existe) {
-      return { ok: false, mensaje: "Ese número de control ya está registrado" };
+  // el registro d nuevo usuario en MongoDB
+  async function registrar(noControl, nombre, contrasena) {
+    try {
+      const res = await api.registrarUsuario(noControl, nombre, contrasena);
+      if (res.data.ok) {
+        return { ok: true };
+      }
+      return { ok: false, mensaje: res.data.message };
+    } catch (error) {
+      const mensaje = error.response?.data?.message || "Error al registrar";
+      return { ok: false, mensaje };
     }
-    const nuevoUsuario = {
-      noControl,
-      nombre,
-      contrasena,
-      esAdmin: false
-    };
-    setUsuarios(prev => [...prev, nuevoUsuario]);
-    return { ok: true };
   }
 
-  // Iniciar sesion
-  function login(noControl, contrasena) {
-    const usuario = usuarios.find(
-      u => u.noControl === noControl && u.contrasena === contrasena
-    );
-    if (!usuario) {
-      return { ok: false, mensaje: "Número de control o contraseña incorrectos" };
+  // Login con MongoDB
+  async function login(noControl, contrasena) {
+    try {
+      const res = await api.loginUsuario(noControl, contrasena);
+      if (res.data.ok) {
+        setUsuarioActual(res.data.data);
+        return { ok: true };
+      }
+      return { ok: false, mensaje: res.data.message };
+    } catch (error) {
+      const mensaje = error.response?.data?.message || "Error al iniciar sesión";
+      return { ok: false, mensaje };
     }
-    setUsuarioActual(usuario);
-    return { ok: true };
   }
 
   // Cerrar sesion
@@ -50,22 +40,23 @@ export function AuthProvider({ children }) {
     setUsuarioActual(null);
   }
 
-  // Cambiar contraseña
-  function cambiarContrasena(noControl, nuevaContrasena) {
-    setUsuarios(prev =>
-      prev.map(u =>
-        u.noControl === noControl ? { ...u, contrasena: nuevaContrasena } : u
-      )
-    );
-    // Actualizar tambien el usuario actual
-    setUsuarioActual(prev => ({ ...prev, contrasena: nuevaContrasena }));
-    return { ok: true };
+  // Cambiar contraseña en MongoDB
+  async function cambiarContrasena(noControl, nuevaContrasena) {
+    try {
+      const res = await api.cambiarContrasena(noControl, nuevaContrasena);
+      if (res.data.ok) {
+        setUsuarioActual(prev => ({ ...prev, contrasena: nuevaContrasena }));
+        return { ok: true };
+      }
+      return { ok: false, mensaje: res.data.message };
+    } catch (error) {
+      return { ok: false, mensaje: "Error al cambiar contraseña" };
+    }
   }
 
   return (
     <AuthContext.Provider value={{
       usuarioActual,
-      usuarios,
       registrar,
       login,
       logout,
