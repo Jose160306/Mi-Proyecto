@@ -1,14 +1,28 @@
 import { useState } from "react";
 import { useEstacionamiento } from "../Context/EstacionamientoContext";
+import { useAuth } from "../Context/AuthContext";
+import Swal from "sweetalert2";
 
 function Vehiculos() {
   const { vehiculos, agregarVehiculo } = useEstacionamiento();
+  const { usuarioActual } = useAuth();
   const [form, setForm] = useState({ placa: "", marca: "", modelo: "" });
 
-  function handleGuardar() {
+  async function handleGuardar() {
     if (!form.placa) { alert("Ingresa las placas"); return; }
-    agregarVehiculo(form);
+
+    const resultado = await agregarVehiculo({
+      ...form,
+      noControl: usuarioActual.noControl
+    });
+
+    if (resultado?.ok === false) {
+      Swal.fire("Error", resultado.mensaje, "error");
+      return;
+    }
+
     setForm({ placa: "", marca: "", modelo: "" });
+    Swal.fire("Guardado", "Vehículo registrado correctamente", "success");
   }
 
   const inputStyle = {
@@ -27,7 +41,6 @@ function Vehiculos() {
         Registro de Vehículos
       </h1>
 
-      {/* Formulario en columna para movil */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
         <input style={inputStyle} placeholder="Placas"  value={form.placa}
           onChange={e => setForm({ ...form, placa: e.target.value })} />
@@ -51,8 +64,8 @@ function Vehiculos() {
 
       <h3 style={{ fontSize: 15, color: "#374151", marginBottom: 12 }}>Lista:</h3>
       <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
-        {vehiculos.map((v, i) => (
-          <li key={i} style={{
+        {vehiculos.map(v => (
+          <li key={v._id} style={{
             display: "flex", alignItems: "center", gap: 10, background: "white",
             padding: "12px 16px", borderRadius: 8,
             boxShadow: "0 1px 3px rgba(0,0,0,0.06)", fontSize: 14, color: "#1f2937"

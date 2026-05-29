@@ -4,7 +4,7 @@ import { useEstacionamiento } from "../Context/EstacionamientoContext";
 function Administrador() {
   const { espacios, cambiarEstado } = useEstacionamiento();
 
-  function handleCambiarEstado(id, estadoActual) {
+  function handleCambiarEstado(numero, estadoActual) {
     const accion = estadoActual === "libre" ? "marcar como ocupado" : "marcar como libre";
     Swal.fire({
       title: "¿Cambiar estado?",
@@ -17,7 +17,7 @@ function Administrador() {
       cancelButtonText: "No"
     }).then((result) => {
       if (result.isConfirmed) {
-        cambiarEstado(id);
+        cambiarEstado(numero);  //ahora pasamos el número del espacio
         Swal.fire("Listo", "El estado fue actualizado", "success");
       }
     });
@@ -34,7 +34,7 @@ function Administrador() {
 
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {espacios.map(e => (
-          <div key={e.id} style={{
+          <div key={e._id} style={{
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -45,7 +45,7 @@ function Administrador() {
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontWeight: 700, fontSize: 15, color: "#0f172a" }}>
-                Espacio {e.id}
+                Espacio {e.numero}
               </span>
               <span style={{
                 padding: "3px 10px",
@@ -60,7 +60,7 @@ function Administrador() {
             </div>
 
             <button
-              onClick={() => handleCambiarEstado(e.id, e.estado)}
+              onClick={() => handleCambiarEstado(e.numero, e.estado)}
               style={{
                 padding: "6px 12px",
                 borderRadius: 8,

@@ -30,59 +30,65 @@ function Tickets() {
       {tickets.length === 0 ? (
         <p style={{ color: "#9ca3af" }}>No hay tickets registrados.</p>
       ) : (
-      <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
-      {tickets.map(t => (
-      <li
-      key={t.id}
-      style={{
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      background: "white",
-      padding: "12px 16px",
-      borderRadius: 8,
-      boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
-      fontSize: 14,
-      color: "#1f2937"
-      }}
-      >
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-      <span style={{ fontSize: 18 }}>🎫</span>
-      <span>Ticket #{t.id} — Espacio {t.espacio} — {t.fecha}</span>
-      {t.cancelado && (
-      <span style={{
-      background: "#fee2e2",
-      color: "#991b1b",
-      padding: "2px 10px",
-      borderRadius: 20,
-      fontSize: 11,
-      fontWeight: 700
-      }}>
-      CANCELADO
-      </span>
-      )}
-      </div>
+        <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 8 }}>
+          {tickets.map(t => (
+            <li
+              key={t._id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                background: "white",
+                padding: "12px 16px",
+                borderRadius: 8,
+                boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+                fontSize: 14,
+                color: "#1f2937"
+              }}
+            >
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 18 }}>🎫</span>
+                  <span style={{ fontWeight: 600 }}>Ticket</span>
+                  {t.cancelado && (
+                    <span style={{
+                      background: "#fee2e2",
+                      color: "#991b1b",
+                      padding: "2px 10px",
+                      borderRadius: 20,
+                      fontSize: 11,
+                      fontWeight: 700
+                    }}>
+                      CANCELADO
+                    </span>
+                  )}
+                </div>
+                <span style={{ fontSize: 12, color: "#6b7280", paddingLeft: 26 }}>
+                  📍 Espacio {t.espacio} · 🕐 {t.fecha} · 👤 {t.usuario}
+                </span>
+              </div>
 
-      {!t.cancelado && (
-      <button
-      onClick={() => handleCancelar(t.id, t.espacio)}
-      style={{
-      padding: "6px 14px",
-      background: "#fee2e2",
-      color: "#991b1b",
-      border: "none",
-      borderRadius: 8,
-      cursor: "pointer",
-      fontWeight: 600,
-      fontSize: 13
-      }}
-      >
-      Cancelar
-      </button>
-      )}
-      </li>
-      ))}
-      </ul>
+              {!t.cancelado && (
+                <button
+                  onClick={() => handleCancelar(t._id, t.espacio)}
+                  style={{
+                    padding: "6px 14px",
+                    background: "#fee2e2",
+                    color: "#991b1b",
+                    border: "none",
+                    borderRadius: 8,
+                    cursor: "pointer",
+                    fontWeight: 600,
+                    fontSize: 13,
+                    flexShrink: 0
+                  }}
+                >
+                  Cancelar
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
       )}
     </section>
   );
