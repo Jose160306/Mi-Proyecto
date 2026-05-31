@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../Context/AuthContext";
+import Swal from "sweetalert2";
 
 function Perfil() {
   const { usuarioActual, cambiarContrasena, logout } = useAuth();
@@ -7,31 +8,34 @@ function Perfil() {
   const [contrasenaActual, setContrasenaActual] = useState("");
   const [nuevaContrasena, setNuevaContrasena]   = useState("");
   const [confirmar, setConfirmar]               = useState("");
-  const [mensaje, setMensaje]                   = useState("");
-  const [error, setError]                       = useState("");
 
-  function handleCambiar() {
-    // Validaciones
+  async function handleCambiar() {
     if (!contrasenaActual || !nuevaContrasena || !confirmar) {
-      setError("Completa todos los campos");
-      return;
-    }
-    if (contrasenaActual !== usuarioActual.contrasena) {
-      setError("La contraseña actual no es correcta");
+      Swal.fire("Error", "Completa todos los campos", "error");
       return;
     }
     if (nuevaContrasena !== confirmar) {
-      setError("Las contraseñas nuevas no coinciden");
+      Swal.fire("Error", "Las contraseñas nuevas no coinciden", "error");
       return;
     }
     if (nuevaContrasena.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres");
+      Swal.fire("Error", "La contraseña debe tener al menos 6 caracteres", "error");
       return;
     }
 
-    cambiarContrasena(usuarioActual.noControl, nuevaContrasena);
-    setError("");
-    setMensaje("✅ Contraseña cambiada correctamente");
+    // Mandamos la contraseña actual al backend para que la verifique con bcrypt
+    const resultado = await cambiarContrasena(
+      usuarioActual.noControl,
+      contrasenaActual,
+      nuevaContrasena
+    );
+
+    if (!resultado.ok) {
+      Swal.fire("Error", resultado.mensaje, "error");
+      return;
+    }
+
+    Swal.fire("✅ Listo", "Contraseña cambiada correctamente", "success");
     setContrasenaActual("");
     setNuevaContrasena("");
     setConfirmar("");
@@ -109,9 +113,6 @@ function Perfil() {
             value={confirmar}
             onChange={e => setConfirmar(e.target.value)}
           />
-
-          {error   && <p style={{ color: "#991b1b", fontSize: 13, margin: 0 }}>{error}</p>}
-          {mensaje && <p style={{ color: "#166534", fontSize: 13, margin: 0 }}>{mensaje}</p>}
 
           <button
             onClick={handleCambiar}
