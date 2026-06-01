@@ -1,45 +1,48 @@
 import { useState } from "react";
 import { useAuth } from "../Context/AuthContext";
+import Swal from "sweetalert2";
 
 function Login() {
   const { login, registrar } = useAuth();
 
-  // Controla si se ve el formulario de login o el de registro
   const [modo, setModo] = useState("login");
-
-  // Campos del formulario
   const [noControl, setNoControl]   = useState("");
   const [nombre, setNombre]         = useState("");
   const [contrasena, setContrasena] = useState("");
   const [error, setError]           = useState("");
 
-  function handleLogin() {
+  async function handleLogin() {
     if (!noControl || !contrasena) {
       setError("Completa todos los campos");
       return;
     }
-    const resultado = login(noControl, contrasena);
+    const resultado = await login(noControl, contrasena);
     if (!resultado.ok) {
       setError(resultado.mensaje);
     }
   }
 
-  function handleRegistrar() {
+  async function handleRegistrar() {
     if (!noControl || !nombre || !contrasena) {
       setError("Completa todos los campos");
       return;
     }
-    const resultado = registrar(noControl, nombre, contrasena);
+    const resultado = await registrar(noControl, nombre, contrasena);
     if (!resultado.ok) {
       setError(resultado.mensaje);
       return;
     }
-    // Si se registro bien, cambia al login
     setError("");
     setModo("login");
     setNoControl("");
     setContrasena("");
-    alert("Registro exitoso, ahora inicia sesión");
+    await Swal.fire({
+      icon: "success",
+      title: "¡Registro exitoso!",
+      text: "Ahora inicia sesión",
+      confirmButtonText: "Aceptar",
+      confirmButtonColor: "#1d4ed8"
+    });
   }
 
   const inputStyle = {
@@ -67,7 +70,6 @@ function Login() {
         width: 360,
         boxShadow: "0 4px 20px rgba(0,0,0,0.1)"
       }}>
-        {/* Encabezado */}
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <span style={{ fontSize: 40 }}>🚗</span>
           <h1 style={{ fontSize: 22, fontWeight: 700, color: "#0f172a", margin: "8px 0 4px" }}>
@@ -78,7 +80,6 @@ function Login() {
           </p>
         </div>
 
-        {/* Campos */}
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <input
             style={inputStyle}
@@ -87,7 +88,6 @@ function Login() {
             onChange={e => setNoControl(e.target.value)}
           />
 
-          {/* Solo se muestra en registro */}
           {modo === "registro" && (
             <input
               style={inputStyle}
@@ -105,12 +105,10 @@ function Login() {
             onChange={e => setContrasena(e.target.value)}
           />
 
-          {/* Mensaje de error */}
           {error && (
             <p style={{ color: "#991b1b", fontSize: 13, margin: 0 }}>{error}</p>
           )}
 
-          {/* Boton principal */}
           <button
             onClick={modo === "login" ? handleLogin : handleRegistrar}
             style={{
@@ -128,7 +126,6 @@ function Login() {
             {modo === "login" ? "Iniciar sesión" : "Registrarse"}
           </button>
 
-          {/* Cambiar entre login y registro */}
           <p style={{ textAlign: "center", fontSize: 13, color: "#6b7280", margin: 0 }}>
             {modo === "login" ? "¿No tienes cuenta?" : "¿Ya tienes cuenta?"}{" "}
             <span
