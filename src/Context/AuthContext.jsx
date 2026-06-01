@@ -4,9 +4,12 @@ import * as api from "../api";
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [usuarioActual, setUsuarioActual] = useState(null);
+  // Recupera el usuario guardado al iniciar
+  const [usuarioActual, setUsuarioActual] = useState(() => {
+    const guardado = localStorage.getItem("usuario");
+    return guardado ? JSON.parse(guardado) : null;
+  });
 
-  // Registrar nuevo usuario en MongoDB
   async function registrar(noControl, nombre, contrasena) {
     try {
       const res = await api.registrarUsuario(noControl, nombre, contrasena);
@@ -18,12 +21,13 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // Login con MongoDB
   async function login(noControl, contrasena) {
     try {
       const res = await api.loginUsuario(noControl, contrasena);
       if (res.data.ok) {
         setUsuarioActual(res.data.data);
+        // Guarda el usuario en localStorage
+        localStorage.setItem("usuario", JSON.stringify(res.data.data));
         return { ok: true };
       }
       return { ok: false, mensaje: res.data.message };
@@ -33,21 +37,18 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // Cerrar sesion
   function logout() {
     setUsuarioActual(null);
+    // Borra el usuario al cerrar sesión
+    localStorage.removeItem("usuario");
   }
 
-  // Cambiar la contrasena - verifica la actual con bcrypt en el backend
   async function cambiarContrasena(noControl, contrasenaActual, nuevaContrasena) {
     try {
-      // Primero verificamos la contraseña actual haciendo en login
       const verificacion = await api.loginUsuario(noControl, contrasenaActual);
       if (!verificacion.data.ok) {
         return { ok: false, mensaje: "La contraseña actual no es correcta" };
       }
-
-      // Si es correcta, actualizamos con la nueva
       const res = await api.cambiarContrasena(noControl, nuevaContrasena);
       if (res.data.ok) return { ok: true };
       return { ok: false, mensaje: res.data.message };
