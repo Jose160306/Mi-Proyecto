@@ -1,8 +1,10 @@
 import Swal from "sweetalert2";
 import { useEstacionamiento } from "../Context/EstacionamientoContext";
+import { useAuth } from "../Context/AuthContext";
 
 function Tickets() {
-  const { tickets, cancelarTicket } = useEstacionamiento();
+  const { tickets, cancelarTicket, eliminarTicketCancelado } = useEstacionamiento();
+  const { usuarioActual } = useAuth();
 
   function handleCancelar(id, espacio) {
     Swal.fire({
@@ -20,6 +22,28 @@ function Tickets() {
         Swal.fire("Cancelado", "La reserva fue cancelada", "success");
       }
     });
+  }
+
+  async function handleEliminar(id) {
+    const result = await Swal.fire({
+      title: "¿Eliminar ticket?",
+      text: "Este ticket cancelado se eliminará permanentemente de la base de datos",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "No"
+    });
+    
+    if (result.isConfirmed) {
+      const res = await eliminarTicketCancelado(id);
+      if (res.ok) {
+        Swal.fire("Eliminado", "El ticket cancelado fue eliminado", "success");
+      } else {
+        Swal.fire("Error", res.mensaje, "error");
+      }
+    }
   }
 
   return (
@@ -68,24 +92,45 @@ function Tickets() {
                 </span>
               </div>
 
-              {!t.cancelado && (
-                <button
-                  onClick={() => handleCancelar(t._id, t.espacio)}
-                  style={{
-                    padding: "6px 14px",
-                    background: "#fee2e2",
-                    color: "#991b1b",
-                    border: "none",
-                    borderRadius: 8,
-                    cursor: "pointer",
-                    fontWeight: 600,
-                    fontSize: 13,
-                    flexShrink: 0
-                  }}
-                >
-                  Cancelar
-                </button>
-              )}
+              <div style={{ display: "flex", gap: 8 }}>
+                {!t.cancelado && (
+                  <button
+                    onClick={() => handleCancelar(t._id, t.espacio)}
+                    style={{
+                      padding: "6px 14px",
+                      background: "#fee2e2",
+                      color: "#991b1b",
+                      border: "none",
+                      borderRadius: 8,
+                      cursor: "pointer",
+                      fontWeight: 600,
+                      fontSize: 13,
+                      flexShrink: 0
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                )}
+                
+                {usuarioActual?.esAdmin && t.cancelado && (
+                  <button
+                    onClick={() => handleEliminar(t._id)}
+                    style={{
+                      padding: "6px 14px",
+                      background: "#e5e7eb",
+                      color: "#dc2626",
+                      border: "none",
+                      borderRadius: 8,
+                      cursor: "pointer",
+                      fontWeight: 600,
+                      fontSize: 13,
+                      flexShrink: 0
+                    }}
+                  >
+                    🗑️ Eliminar
+                  </button>
+                )}
+              </div>
             </li>
           ))}
         </ul>
