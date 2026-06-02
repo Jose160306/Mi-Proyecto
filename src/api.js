@@ -34,6 +34,8 @@ export const crearTicket = (espacio, usuario, noControl, fecha) =>
 export const cancelarTicket = (id) =>
   api.put(`/tickets/cancelar/${id}`);
 
+export const eliminarTicket = (id) => api.delete(`/tickets/eliminar/${id}`);
+
 // ===== VEHICULOS =====
 export const obtenerVehiculos = () =>
   api.get("/vehiculos");
