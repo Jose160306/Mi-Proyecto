@@ -110,6 +110,20 @@ export function EstacionamientoProvider({ children }) {
     }
   }
 
+  // Eliminar ticket cancelado (solo admin)
+  async function eliminarTicketCancelado(id) {
+    try {
+      await api.eliminarTicket(id);
+      setTickets(prev => prev.filter(ticket => ticket._id !== id));
+      return { ok: true };
+    } catch (error) {
+      const mensaje = error.response?.data?.message || "Error al eliminar ticket";
+      console.log(mensaje);
+      return { ok: false, mensaje };
+    }
+  }
+
+
   return (
     <EstacionamientoContext.Provider value={{
       vehiculos,
@@ -119,6 +133,7 @@ export function EstacionamientoProvider({ children }) {
       crearTicket,
       cambiarEstado,
       cancelarTicket,
+      eliminarTicketCancelado,
     }}>
       {children}
     </EstacionamientoContext.Provider>
